@@ -1,0 +1,54 @@
+version: "3"
+services:
+  frontend:
+    restart: always
+    build: ./frontend
+    ports:
+      - "4200:4200" # specify port forewarding
+    networks:
+      oms:
+        aliases:
+          - oms-frontend.local
+  order-backend:
+    restart: always
+    build: ./order-backend
+    environment:
+      - PORT=3000
+      - MONGO_URL=mongodb://mongodb:27017/oms-orders
+    links:
+      - mongodb
+    networks:
+      oms:
+        aliases:
+          - oms-order-backend.local
+  payment-backend:
+    restart: always
+    build: ./payment-backend
+    environment:
+      - PORT=5000
+      - MONGO_URL=mongodb://mongodb:27017/oms-payment
+    links:
+      - mongodb
+    networks:
+      oms:
+        aliases:
+          - oms-payment-backend.local
+  nginx:
+    restart: always
+    build: ./nginx
+    ports:
+      - "80:80"
+    links:
+          - backend1
+          - backend2
+          - frontend
+    networks:
+      oms:
+    
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+      
+networks:
+  oms:
